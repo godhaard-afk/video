@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Scroll Animation</title>
+
+  <style>
+    body {
+      margin: 0;
+      height: 500vh;
+      background: black;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+
+<canvas id="canvas"></canvas>
+
+<script>
+const frameCount = 99;
+const startFrame = 19;
+
+const currentFrame = index =>
+  `frames/frame_${String(index + startFrame).padStart(3, '0')}.webp`;
+
+const canvas = document.getElementById('canvas');
+const context = canvas.getContext('2d');
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const images = [];
+const img = new Image();
+img.src = currentFrame(0);
+
+img.onload = () => {
+  drawImage(img);
+};
+
+for (let i = 0; i < frameCount; i++) {
+  const image = new Image();
+  image.src = currentFrame(i);
+  images.push(image);
+}
+
+function drawImage(img) {
+  const canvasRatio = canvas.width / canvas.height;
+  const imgRatio = img.width / img.height;
+
+  let drawWidth, drawHeight;
+
+  if (imgRatio > canvasRatio) {
+    drawHeight = canvas.height;
+    drawWidth = img.width * (canvas.height / img.height);
+  } else {
+    drawWidth = canvas.width;
+    drawHeight = img.height * (canvas.width / img.width);
+  }
+
+  const x = (canvas.width - drawWidth) / 2;
+  const y = (canvas.height - drawHeight) / 2;
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(img, x, y, drawWidth, drawHeight);
+}
+
+window.addEventListener('scroll', () => {
+  const scrollTop = document.documentElement.scrollTop;
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  const scrollFraction = scrollTop / maxScroll;
+
+  const frameIndex = Math.min(
+    frameCount - 1,
+    Math.floor(scrollFraction * frameCount)
+  );
+
+  requestAnimationFrame(() => {
+    drawImage(images[frameIndex]);
+  });
+});
+</script>
+
+</body>
+</html>
